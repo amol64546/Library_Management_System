@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.swing.table.AbstractTableModel;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -25,7 +26,20 @@ public class AuthorService {
         authorRepository.save(author);
     }
 
-    public List<Author> getAuthors() {
-        return authorRepository.findAll();
+    public List<AuthorResponseDTO> getAuthors() {
+        List<Author> authorList = authorRepository.findAll();
+
+        List<AuthorResponseDTO> authorResponseDTOList = new ArrayList<>();
+
+        for(Author a: authorList){
+            AuthorResponseDTO authorResponseDTO = AuthorResponseDTO.builder()
+                    .age(a.getAge())
+                    .email(a.getEmail())
+                    .mobNo(a.getMobNo())
+                    .name(a.getName())
+                    .build();
+            authorResponseDTOList.add(authorResponseDTO);
+        }
+        return authorResponseDTOList;
     }
 }

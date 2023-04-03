@@ -1,13 +1,18 @@
 package com.example.webApplication.LibraryManagementSystem.DTO;
 
-//import lombok.AllArgsConstructor;
-//import lombok.Getter;
-//import lombok.NoArgsConstructor;
-//import lombok.Setter;
-//
-//@NoArgsConstructor
-//@AllArgsConstructor
-//@Getter
-//@Setter
+import lombok.*;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
+@Builder
 public class AuthorResponseDTO {
+    private String name;
+
+    private int age;
+
+    private String mobNo;
+
+    private String email;
 }

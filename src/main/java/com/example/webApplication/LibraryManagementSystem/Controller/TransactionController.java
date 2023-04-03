@@ -25,4 +25,19 @@ public class TransactionController {
         }
         return new ResponseEntity<>(issueBookResponseDto, HttpStatus.ACCEPTED);
     }
+
+    @PostMapping("/return")
+    public ResponseEntity returnBook(@RequestBody IssueBookRequestDTO issueBookRequestDTO) throws Exception{
+        IssueBookResponseDto issueBookResponseDto;
+        try{
+            issueBookResponseDto = transactionService.returnBook(issueBookRequestDTO);
+        }catch(Exception e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_ACCEPTABLE);
+        }
+        return new ResponseEntity<>(issueBookResponseDto, HttpStatus.ACCEPTED);
+    }
+    @GetMapping("/get")
+    public String getAllTxns(@RequestParam("cardId") int cardId){
+        return transactionService.getAllTxns(cardId);
+    }
 }

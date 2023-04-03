@@ -17,6 +17,7 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -100,16 +101,100 @@ public class TransactionService {
         issueBookResponseDto.setBookName(book.getTitle());
         issueBookResponseDto.setTransactionStatus(Transaction_Status.SUCCESS);
 
-        // sending email
-        String text = "Congrats!! "+card.getStudent().getName()+" You have been issued " + book.getTitle() +" book";
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom("amolnakhate240@gmail.com");
-        message.setTo(card.getStudent().getEmail());
-        message.setSubject("Issue book notification");
-        message.setText(text);
-        emailSender.send(message);
+//        // sending email
+//        String text = "Congrats!! "+card.getStudent().getName()+" You have been issued " + book.getTitle() +" book";
+//        SimpleMailMessage message = new SimpleMailMessage();
+//        message.setFrom("amolnakhate240@gmail.com");
+//        message.setTo(card.getStudent().getEmail());
+//        message.setSubject("Issue book notification");
+//        message.setText(text);
+//        emailSender.send(message);
 
 
         return issueBookResponseDto;
+    }
+
+    public String getAllTxns(int cardId){
+        List<Transaction> transactionList = transactionRepository.getAllSuccessfullTxnsWithCardNo(cardId);
+        String ans = "";
+        for(Transaction t: transactionList){
+            ans += t.getTransactionNo();
+            ans += "\n";
+        }
+
+        return ans;
+    }
+
+    public IssueBookResponseDto returnBook(IssueBookRequestDTO issueBookRequestDTO) throws Exception {
+
+        Transaction transaction = new Transaction();
+        transaction.setTransactionNo(String.valueOf(UUID.randomUUID()));
+        transaction.setIssuedOperation(false);
+
+        // check for card and book
+        Card card;
+        try{
+            // NoSuchElementException
+            card = cardRepository.findById(issueBookRequestDTO.getCardId()).get();
+        }catch(Exception e){
+            transaction.setTransactionStatus(Transaction_Status.FAILED);
+            transaction.setMessage("Invalid card ID");
+            transactionRepository.save(transaction);
+            throw new InvalidCardException("Invalid card ID");
+        }
+
+        Book book;
+        try{
+            // NoSuchElementException
+             book = bookRepository.findById(issueBookRequestDTO.getBookId()).get();
+        }catch(Exception e){
+            transaction.setTransactionStatus(Transaction_Status.FAILED);
+            transaction.setMessage("Invalid book ID");
+            transactionRepository.save(transaction);
+            throw new InvalidBookException("Invalid book ID");
+        }
+
+        if(!card.getBooksIssued().contains(book)){
+            throw new Exception("This book is not issued");
+        }
+
+
+        transaction.setBook(book);
+        transaction.setCard(card);
+
+
+
+        // return book
+        transaction.setTransactionStatus(Transaction_Status.SUCCESS);
+        transaction.setMessage("Transaction was successful");
+
+        book.setIssued(false);
+        book.setCard(card);
+        book.getTransactionList().add(transaction);
+
+        card.getTransactionList().add(transaction);
+        card.getBooksIssued().remove(book);
+
+        cardRepository.save(card);
+
+        // response dto
+        IssueBookResponseDto issueBookResponseDto = new IssueBookResponseDto();
+        issueBookResponseDto.setTransactionId(transaction.getTransactionNo());
+        issueBookResponseDto.setBookName(book.getTitle());
+        issueBookResponseDto.setTransactionStatus(Transaction_Status.SUCCESS);
+
+//        // sending email
+//        String text = "Congrats!! "+card.getStudent().getName()+" You have been issued " + book.getTitle() +" book";
+//        SimpleMailMessage message = new SimpleMailMessage();
+//        message.setFrom("amolnakhate240@gmail.com");
+//        message.setTo(card.getStudent().getEmail());
+//        message.setSubject("Issue book notification");
+//        message.setText(text);
+//        emailSender.send(message);
+
+
+        return issueBookResponseDto;
+
+
     }
 }

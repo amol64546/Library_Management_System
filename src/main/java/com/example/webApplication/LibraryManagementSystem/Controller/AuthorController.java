@@ -24,7 +24,7 @@ public class AuthorController {
     }
 
     @GetMapping("/get_authors")
-    public List<Author> getAuthors(){
+    public List<AuthorResponseDTO> getAuthors(){
         return authorService.getAuthors();
     }
 
